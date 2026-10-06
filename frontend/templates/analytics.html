@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .grid { display: grid; grid-template-cols: 1fr; gap: 32px; margin-top: 24px; }
+    @media (min-width: 768px) { .grid { grid-template-cols: 3fr 2fr; } }
+    .form-inline { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 30px; align-items: flex-end; }
+    .form-group { flex: 1; min-width: 180px; }
+    .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+    .summary-badge { background-color: #eef2ff; border: 1px solid #e0e7ff; padding: 16px; border-radius: 8px; max-width: 200px; margin-bottom: 24px; }
+    .chart-container { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .bar-group { margin-bottom: 16px; }
+    .bar-label-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .progress-bg { width: 100%; background-color: #e2e8f0; height: 16px; border-radius: 8px; overflow: hidden; }
+    .progress-bar { background-color: #4f46e5; height: 100%; border-radius: 8px; }
+    .table { width: 100%; border-collapse: collapse; text-align: left; }
+    .table th { background-color: #0f172a; color: white; padding: 12px 16px; font-size: 14px; }
+    .table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+</style>
+
+<h3>Expense Breakdown & Trends</h3>
+
+<!-- Date Range Picker Form -->
+<form method="GET" action="/ui/analytics" class="form-inline">
+    <div class="form-group">
+        <label class="form-label">Start Date:</label>
+        <input type="date" class="form-control" name="start_date" value="{{ start_date }}">
+    </div>
+    <div class="form-group">
+        <label class="form-label">End Date:</label>
+        <input type="date" class="form-control" name="end_date" value="{{ end_date }}">
+    </div>
+    <button type="submit" class="btn btn-slate" style="height: 40px;">Filter Data</button>
+</form>
+
+{% if analytics_data %}
+<div class="summary-badge">
+    <span style="font-size: 12px; font-weight: bold; color: #4f46e5; text-transform: uppercase;">Total Period Expense</span>
+    <h2 style="margin: 4px 0 0 0; color: #1e1b4b;">${{ "{:,.2f}".format(total_spend) }}</h2>
+</div>
+
+<div class="grid">
+    <!-- বাম পাশ: অফলাইন সিএসএস বার চার্ট -->
+    <div class="chart-container">
+        <h4 style="margin-top: 0; margin-bottom: 20px;">📈 Category Percentage Distribution Plot</h4>
+        {% for row in analytics_data %}
+        <div class="bar-group">
+            <div class="bar-label-row">
+                <span>{{ row.category }}</span>
+                <span>{{ row.percentage }}%</span>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-bar" style="width: {{ row.percentage }}%;"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ডান পাশ: বিস্তারিত ডাটা টেবিল -->
+    <div>
+        <h4 style="margin-top: 0; margin-bottom: 20px;">📋 Detailed Breakdown View</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th style="text-align: right;">Total ($)</th>
+                    <th style="text-align: right;">Share</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in analytics_data %}
+                <tr>
+                    <td style="font-weight: 500;">{{ row.category }}</td>
+                    <td style="text-align: right;">${{ "{:,.2f}".format(row.total) }}</td>
+                    <td style="text-align: right; color: #4f46e5; font-weight: bold;">{{ row.percentage }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div style="padding: 16px; background-color: #fef3c7; color: #92400e; border-radius: 8px; font-weight: 600;">
+    ⚠️ No expense entries found for this specific date range.
+</div>
+{% endif %}
+{% endblock %}
+

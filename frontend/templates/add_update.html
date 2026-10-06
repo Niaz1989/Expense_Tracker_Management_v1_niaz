@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .form-group { margin-bottom: 24px; max-width: 400px; }
+    .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+    .table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 16px; }
+    .table th { background-color: #0f172a; color: white; padding: 12px 16px; font-size: 14px; }
+    .table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; }
+    .btn-submit { background-color: #059669; }
+    .btn-submit:hover { background-color: #047857; }
+    .flex-actions { display: flex; gap: 12px; margin-top: 24px; }
+</style>
+
+<h3>Manage Daily Expenses</h3>
+
+<!-- Date Selector Form -->
+<form method="GET" action="/ui/add-update" class="form-group">
+    <label class="form-label">Select Date:</label>
+    <div style="display: flex; gap: 8px;">
+        <input type="date" class="form-control" name="expense_date" value="{{ selected_date }}">
+        <button type="submit" class="btn btn-slate" style="padding: 6px 14px; font-size: 14px;">Show Data</button>
+    </div>
+</form>
+
+<form method="POST" action="/ui/save-expenses">
+    <input type="hidden" name="expense_date" value="{{ selected_date }}">
+
+    <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Amount ($)</th>
+                    <th>Category</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 🌟 ফিক্সড লুপ: পাইচার্ম রিডারকে শান্ত রাখতে সহজ এইচটিএমএল কোডিং মেথড ব্যবহার করা হয়েছে -->
+                {% for i in range(total_rows_to_render) %}
+                    {% if i < expenses|length %}
+                        {% set exp = expenses[i] %}
+                        <tr>
+                            <td>
+                                <input type="number" step="0.01" class="form-control" name="amount" value="{{ exp.amount }}" required>
+                            </td>
+                            <td>
+                                <select class="form-control" name="category" required>
+                                    <option value="Food" {% if exp.category == 'Food' %}selected{% endif %}>Food</option>
+                                    <option value="Entertainment" {% if exp.category == 'Entertainment' %}selected{% endif %}>Entertainment</option>
+                                    <option value="Utilities" {% if exp.category == 'Utilities' %}selected{% endif %}>Utilities</option>
+                                    <option value="Rent" {% if exp.category == 'Rent' %}selected{% endif %}>Rent</option>
+                                    <option value="Transport" {% if exp.category == 'Transport' %}selected{% endif %}>Transport</option>
+                                    <option value="Other" {% if exp.category == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control" name="notes" value="{{ exp.notes }}">
+                            </td>
+                        </tr>
+                    {% else %}
+                        <!-- নতুন খালি লাইন অ্যাড করার ঘর -->
+                        <tr>
+                            <td>
+                                <input type="number" step="0.01" class="form-control" name="amount" placeholder="0.00">
+                            </td>
+                            <td>
+                                <select class="form-control" name="category">
+                                    <option value="Food">Food</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Rent">Rent</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control" name="notes" placeholder="Optional notes...">
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="flex-actions">
+        <button type="submit" class="btn btn-submit">🚀 Save changes to Database</button>
+        <a href="/ui/add-update?expense_date={{ selected_date }}&rows={{ current_rows_count + 1 }}" class="btn btn-slate" style="text-align:center; line-height: 20px;">➕ Add Row</a>
+    </div>
+</form>
+
+{% if success_msg %}
+    <div style="margin-top: 16px; padding: 12px; background-color: #d1fae5; color: #065f46; border-radius: 8px; font-weight: 600;">
+        {{ success_msg }}
+    </div>
+{% endif %}
+{% endblock %}
+
+
+
+
+
+
+
